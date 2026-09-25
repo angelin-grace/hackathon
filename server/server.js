@@ -17,15 +17,28 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/skills
 app.use(cors());
 app.use(express.json());
 
+// Chrome devtools probe handler
+app.get('/.well-known/*', (req, res) => res.status(204).end());
+
+// Base API route & Health check
+app.get(['/', '/api', '/api/health'], (req, res) => {
+  res.json({
+    success: true,
+    message: 'SkillSwap Backend API Server v1.0',
+    status: 'Running',
+    timestamp: new Date()
+  });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/ratings', ratingRoutes);
 
-// Root test route
-app.get('/api/health', (req, res) => {
-  res.json({ success: true, status: 'SkillSwap API Running smoothly', timestamp: new Date() });
+// Catch-all 404 for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ success: false, message: 'API Endpoint Not Found' });
 });
 
 // Default error handler for consistent format
